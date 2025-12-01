@@ -37,6 +37,19 @@ class AuthService {
     localStorage.setItem("tokenType", data.tokenType);
     localStorage.setItem("user", JSON.stringify(data.user));
   }
+
+  // Logout method
+  logoutUser() {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("tokenType");
+    localStorage.removeItem("user");
+  }
+  // Check if user is logged in
+  isLoggedIn() {
+    return localStorage.getItem("isLoggedIn") === "true";
+  }
 }
 export default new AuthService();
 

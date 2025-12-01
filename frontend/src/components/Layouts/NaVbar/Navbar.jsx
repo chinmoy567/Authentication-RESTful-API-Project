@@ -1,7 +1,17 @@
 import React from "react";
-import {Link} from "react-router-dom";
+import {Link,useNavigate} from "react-router-dom";
+import AuthService from "../../../services/AuthService";
 
 const Navbar = () => {
+
+
+  const navigate = useNavigate();
+
+  const logOutUser = async () => {
+    await AuthService.logoutUser();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <nav className="bg-blue-600 text-white px-6 py-4 shadow-md">
       <div className="flex justify-between items-center max-w-6xl mx-auto">
@@ -17,7 +27,7 @@ const Navbar = () => {
             <Link to="/profile">Profile</Link>
           </li>
           <li className="cursor-pointer hover:text-gray-200">
-            <Link to="/logout">Logout</Link>
+            <Link onClick={logOutUser}>Logout</Link>
           </li>
           <li className="cursor-pointer hover:text-gray-200">
             <Link to="/login">Login</Link>
