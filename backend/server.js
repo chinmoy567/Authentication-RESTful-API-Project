@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 
 // External modules
 const userRoute = require("./routes/userRoute");
@@ -28,6 +29,9 @@ app.set("views", "./views");
 // Body parsing middleware 
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
+
+// Static folder for images
+app.use("/images", express.static(path.join(__dirname, "public/images")));
 
 
 // MongoDB Connection

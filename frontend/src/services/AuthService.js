@@ -50,6 +50,11 @@ class AuthService {
   isLoggedIn() {
     return localStorage.getItem("isLoggedIn") === "true";
   }
+
+  getUserData() {
+    return JSON.parse(localStorage.getItem("user"));
+  }
+  
 }
 export default new AuthService();
 
