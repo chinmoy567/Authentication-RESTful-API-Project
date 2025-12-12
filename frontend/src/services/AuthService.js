@@ -51,11 +51,30 @@ class AuthService {
     return localStorage.getItem("isLoggedIn") === "true";
   }
 
+  // Get user data from local storage
   getUserData() {
     return JSON.parse(localStorage.getItem("user"));
   }
+
+  // Update user data
+  updateUserData(formData) {
+    const authorizationHeader = {
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("accessToken"),
+      },
+    };
+
+    return axios.post(
+      this.url + "update-profile",
+      formData,
+      authorizationHeader
+    );
+  }
+
+  setUserData(userData) {
+    localStorage.setItem("user", JSON.stringify(userData));
+  }
   
 }
+
 export default new AuthService();
-
-

@@ -1,27 +1,84 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AuthService from "../../services/AuthService";
 import Layout from "../Layouts/Layout/Layout";
 
 const Dashboard = () => {
 
-    const userData = AuthService.getUserData();
-    const [name, setName] = useState(userData.name);
-    const [mobile, setMobile] = useState(userData.mobile);
-    const [email, setEmail] = useState(userData.email);
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [mobile, setMobile] = useState("");
     const [image, setImage] = useState(null);
-    const [imageUrl, setImageUrl] = useState(
-      `${import.meta.env.VITE_API_BE_URL}/images/${userData.image}`
-    );
-
-
-
-
+    const [imageUrl, setImageUrl] = useState("");
     const [errors, setErrors] = useState({});
+    const fileInputRef = useRef(null);
 
+  // Function to refresh user data
+    const refreshData = () => {
+      const userData = AuthService.getUserData();
+      setName(userData.name);
+      setEmail(userData.email);
+      setMobile(userData.mobile);
+      setImage(null);
+      setImageUrl(`${import.meta.env.VITE_API_BE_URL}${userData.image}`);
+
+      if(fileInputRef.current){
+        fileInputRef.current.value = '';
+      }
+    };
+
+    useEffect(() => {
+      refreshData();
+    }, []);
+
+    // Handle form submission
     const handleSubmit = async (event) => {
       event.preventDefault();
-      // Handle form submission logic here
-    }
+      setErrors({});
+      
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("mobile", mobile);
+      if (image) {
+        formData.append("image", image);
+      }
+  
+      try {
+        const response = await AuthService.updateUserData(formData);
+        const data = response.data;
+        
+        if (data.success) {
+          alert(data.msg);
+          AuthService.setUserData(data.user);
+          refreshData();
+        }
+        else {
+          alert(data.msg);
+        }
+      }
+      catch (error) {
+        if (
+          error.response &&
+          (error.response.status === 400 || error.response.status === 401)) {
+          if (error.response.data.errors) {
+            const apiErrors = error.response.data.errors;
+            const newErrors = {};
+            apiErrors.forEach((apiError) => {
+              newErrors[apiError.path] = apiError.msg;
+            });
+            setErrors(newErrors);
+          } 
+          else {
+            alert(
+              error.response.data.msg
+                ? error.response.data.msg
+                : error.response.message
+            );
+          }
+        } else {
+          alert(error.message);
+        }
+      } 
+    };
 
   return (
     <Layout>
@@ -72,6 +129,7 @@ const Dashboard = () => {
           <div>
             <label className="block mb-1 font-medium">Email</label>
             <input
+              disabled
               type="email"
               placeholder="Enter your email"
               value={email}
@@ -89,6 +147,7 @@ const Dashboard = () => {
             <label className="block mb-1 font-medium">Profile Image</label>
             <input
               type="file"
+              ref={fileInputRef}
               onChange={(e) => setImage(e.target.files[0])}
               className="w-full text-gray-300 bg-gray-800 border border-gray-700 
               rounded-lg p-2"
