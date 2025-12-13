@@ -15,6 +15,57 @@ class AuthService {
     },
   };
 
+  // Axios instance with interceptors
+  constructor() {
+    this.axiosInstance = axios.create();
+    this.axiosInstance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+
+          try {
+            // if refresh token is not expired
+            await this.refreshToken();
+            const newAccessToken = localStorage.getItem("accessToken");
+            originalRequest.headers["Authorization"] =
+              "Bearer " + newAccessToken;
+            return this.axiosInstance(originalRequest);
+
+          } catch (e) {
+            // refresh token also expired
+            this.logoutUser();
+            window.location.href = "/login";
+            return Promise.reject(e);
+          }
+        }
+      }
+    );
+  }
+
+  // Refresh token method
+  async refreshToken() {
+    const storedRefreshToken = localStorage.getItem("refreshToken");
+
+    const authorizationHeader = {
+      headers: {
+        Authorization: "Bearer " + storedRefreshToken,
+      },
+    };
+
+    const response = await axios.get(
+      this.url + "refresh-token",
+      authorizationHeader
+    );
+
+    const { accessToken, refreshToken } = response.data;
+
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+  }
+
   // Register method
   register(formData) {
     return axios.post(
@@ -64,7 +115,7 @@ class AuthService {
       },
     };
 
-    return axios.post(
+    return this.axiosInstance.post(
       this.url + "update-profile",
       formData,
       authorizationHeader
@@ -74,7 +125,6 @@ class AuthService {
   setUserData(userData) {
     localStorage.setItem("user", JSON.stringify(userData));
   }
-  
 }
 
 export default new AuthService();
