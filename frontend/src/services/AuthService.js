@@ -73,7 +73,7 @@ class AuthService {
       formData,
       this.configMultipartData
     );
-  }
+  }z
 
   // Login method
   login(formData) {
@@ -105,6 +105,15 @@ class AuthService {
   // Get user data from local storage
   getUserData() {
     return JSON.parse(localStorage.getItem("user"));
+  }
+
+  //forget password
+  forgotPassword(formData) {
+    return axios.post(  
+      this.url + "forgot-password",
+      formData,
+      this.configJsonData
+    );
   }
 
   // Update user data
